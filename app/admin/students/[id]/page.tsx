@@ -5,19 +5,19 @@ import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import RemoveEnrollmentButton from "@/components/RemoveEnrollmentButton";
 
-export default async function StudentDetailsPage({
+export default async function Page({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const session = await auth();
+  const { id } = await params;
 
   if (!session?.user || (session.user as any).role !== "admin") {
     redirect("/login");
   }
 
   const student = await prisma.user.findUnique({
-    where: { id: params.id },
+    where: { id:id },
     include: {
       enrollments: {
         include: {
