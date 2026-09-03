@@ -10,8 +10,9 @@ import SearchInput from "@/components/SearchInput";
 export default async function AdminStudentsPage({
   searchParams,
 }: {
-  searchParams: { q?: string };
+  searchParams: Promise<{ q?: string }>;
 }) {
+  const params = await searchParams;
   const session = await auth();
 
   if (!session?.user || (session.user as any).role !== "admin") {
@@ -43,7 +44,7 @@ export default async function AdminStudentsPage({
     }),
   ]);
 
-  const q = (searchParams.q || "").toLowerCase().trim();
+  const q = (params.q || "").toLowerCase().trim();
 
   const filteredStudents = q
     ? students.filter(
