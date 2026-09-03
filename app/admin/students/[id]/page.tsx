@@ -11,13 +11,14 @@ export default async function Page({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const session = await auth();
 
   if (!session?.user || (session.user as any).role !== "admin") {
     redirect("/login");
   }
 
   const student = await prisma.user.findUnique({
-    where: { id:id },
+    where: { id },
     include: {
       enrollments: {
         include: {
