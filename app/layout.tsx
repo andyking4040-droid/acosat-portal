@@ -1,0 +1,38 @@
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
+import AuthProvider from "@/components/providers/SessionProvider";
+import NavigationProgress from "@/components/NavigationProgress";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+});
+
+export const metadata: Metadata = {
+  title: "ACOSAT Online Portal",
+  description:
+    "American College of Science and Technology - Online Learning Portal",
+  icons: {
+    icon: [{ url: "/acosat-logo.png", type: "image/png" }],
+    shortcut: "/acosat-logo.png",
+    apple: "/acosat-logo.png",
+  },
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en">
+      <body className={`${inter.className} antialiased`}>
+        <AuthProvider>
+          <NavigationProgress />
+          {children}
+        </AuthProvider>
+      </body>
+    </html>
+  );
+}
