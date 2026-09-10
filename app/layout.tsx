@@ -5,25 +5,21 @@ import AuthProvider from "@/components/providers/SessionProvider";
 
 const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-inter",
 });
 
 export const metadata: Metadata = {
   title: "ACOSAT Online Portal",
-  description:
-    "American College of Science and Technology - Online Learning Portal",
+  description: "American College of Science and Technology - Online Learning Portal",
   icons: {
-    icon: [{ url: "/acosat-logo.png", type: "image/png" }],
-    shortcut: "/acosat-logo.png",
-    apple: "/acosat-logo.png",
+    icon: "/acosat-logo.png",
   },
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
       <body className={`${inter.className} antialiased`}>
