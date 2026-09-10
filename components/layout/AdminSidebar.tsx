@@ -23,7 +23,12 @@ export default function AdminSidebar() {
 
       <aside className="hidden lg:flex w-64 bg-navy-700 text-white flex-shrink-0 flex-col min-h-screen">
         <div className="p-5 border-b border-navy-600">
-          <div className="flex items-center gap-3">
+          <a
+            href="https://www.acosatsl.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-3"
+          >
             <img
               src="/acosat-logo.png"
               alt="ACOSAT"
@@ -35,7 +40,7 @@ export default function AdminSidebar() {
               </div>
               <div className="text-xs text-navy-300">Administrator</div>
             </div>
-          </div>
+          </a>
         </div>
 
         <nav className="flex-1 p-4 space-y-1">

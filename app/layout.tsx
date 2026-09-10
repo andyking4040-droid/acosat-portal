@@ -10,7 +10,11 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "ACOSAT Online Portal",
-  description: "American College of Science and Technology - Online Learning Portal",
+  description:
+    "American College of Science and Technology - Online Learning Portal",
+  icons: {
+    icon: "/acosat-logo.png",
+  },
 };
 
 export default function RootLayout({
