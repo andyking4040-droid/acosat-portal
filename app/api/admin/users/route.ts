@@ -3,7 +3,10 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 
-export async function PATCH(request: Request) {
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+export async function POST(request: Request) {
   try {
     const session = await auth();
 
@@ -11,118 +14,61 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await request.json();
-    console.log("PATCH body:", body);
+    let body: any;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    }
 
-    const { userId, name, email, password } = body;
+    const name = (body.name || "").trim();
+    const email = (body.email || "").trim().toLowerCase();
+    const password = body.password || "";
+    const role = body.role || "student";
 
-    if (!userId || !name || !email) {
+    if (!name || !email || !password) {
       return NextResponse.json(
-        { error: "User ID, name and email are required" },
+        { error: "Name, email, and password are required" },
         { status: 400 }
       );
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    if (!["student", "lecturer", "admin"].includes(role)) {
+      return NextResponse.json({ error: "Invalid role" }, { status: 400 });
     }
 
-    const emailTaken = await prisma.user.findFirst({
-      where: {
+    const existing = await prisma.user.findUnique({ where: { email } });
+    if (existing) {
+      return NextResponse.json(
+        { error: "Email already exists" },
+        { status: 400 }
+      );
+    }
+
+    const hashed = await bcrypt.hash(password, 10);
+
+    const user = await prisma.user.create({
+      data: {
+        name,
         email,
-        NOT: { id: userId },
+        password: hashed,
+        role,
       },
     });
 
-    if (emailTaken) {
-      return NextResponse.json(
-        { error: "Email is already used by another account" },
-        { status: 400 }
-      );
-    }
-
-    const updateData: any = {
-      name,
-      email,
-    };
-
-    if (password && password.trim() !== "") {
-      updateData.password = await bcrypt.hash(password, 10);
-    }
-
-    const updated = await prisma.user.update({
-      where: { id: userId },
-      data: updateData,
+    return NextResponse.json({
+      success: true,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
     });
-
-    console.log("User updated:", updated.id);
-
-    return NextResponse.json({ success: true });
-  } catch (error: any) {
-    console.error("Update user error:", error);
+  } catch (error) {
+    console.error("Create user error:", error);
     return NextResponse.json(
-      { error: error?.message || "Failed to update user" },
-      { status: 500 }
-    );
-  }
-}
-
-export async function DELETE(request: Request) {
-  try {
-    const session = await auth();
-
-    if (!session?.user || (session.user as any).role !== "admin") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { userId } = await request.json();
-
-    if (!userId) {
-      return NextResponse.json(
-        { error: "User ID is required" },
-        { status: 400 }
-      );
-    }
-
-    const currentAdmin = await prisma.user.findUnique({
-      where: { email: session.user.email! },
-    });
-
-    if (currentAdmin?.id === userId) {
-      return NextResponse.json(
-        { error: "You cannot delete your own account" },
-        { status: 400 }
-      );
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
-    if (user.role === "admin") {
-      return NextResponse.json(
-        { error: "Cannot delete admin accounts" },
-        { status: 400 }
-      );
-    }
-
-    await prisma.user.delete({
-      where: { id: userId },
-    });
-
-    return NextResponse.json({ success: true });
-  } catch (error: any) {
-    console.error("Delete user error:", error);
-    return NextResponse.json(
-      { error: error?.message || "Failed to delete user" },
+      { error: "Failed to create user" },
       { status: 500 }
     );
   }

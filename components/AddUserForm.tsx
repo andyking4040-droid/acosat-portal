@@ -13,7 +13,7 @@ export default function AddUserForm() {
   const [message, setMessage] = useState("");
   const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setMessage("");
@@ -25,7 +25,14 @@ export default function AddUserForm() {
         body: JSON.stringify({ name, email, password, role }),
       });
 
-      const data = await res.json();
+      const text = await res.text();
+      let data: any = {};
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch {
+        setMessage("Server error — invalid response. Check API route.");
+        return;
+      }
 
       if (!res.ok) {
         setMessage(data.error || "Failed to create user");
@@ -37,7 +44,6 @@ export default function AddUserForm() {
         setMessage("Account created successfully!");
         router.refresh();
 
-        // Close popup after short delay
         setTimeout(() => {
           setOpen(false);
           setMessage("");
