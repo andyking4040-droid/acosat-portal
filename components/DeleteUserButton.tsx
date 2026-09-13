@@ -8,20 +8,17 @@ export default function DeleteUserButton({
   userName,
 }: {
   userId: string;
-  userName: string;
+  userName?: string;
 }) {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const handleDelete = async () => {
-    const confirmed = confirm(
-      `Are you sure you want to delete "${userName}"?\nThis action cannot be undone.`
-    );
-
-    if (!confirmed) return;
+    if (!confirm(`Delete ${userName || "this user"}? This cannot be undone.`)) {
+      return;
+    }
 
     setLoading(true);
-
     try {
       const res = await fetch("/api/admin/users", {
         method: "DELETE",
@@ -29,15 +26,23 @@ export default function DeleteUserButton({
         body: JSON.stringify({ userId }),
       });
 
-      const data = await res.json();
+      const text = await res.text();
+      let data: any = {};
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch {
+        alert("Server error — invalid response");
+        return;
+      }
 
       if (!res.ok) {
         alert(data.error || "Failed to delete user");
-      } else {
-        router.refresh();
+        return;
       }
-    } catch (error) {
-      alert("Something went wrong");
+
+      router.refresh();
+    } catch (error: any) {
+      alert(error?.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
